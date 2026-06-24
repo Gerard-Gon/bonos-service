@@ -58,6 +58,33 @@ class ReclamarRequest(BaseModel):
 #   - readiness: ¿está listo para recibir tráfico? Debe verificar la BD.
 # Luego configurar livenessProbe/readinessProbe en el Deployment de EKS.
 
+@app.get("/livez", status_code=200)
+def liveness():
+    """
+    livenessProbe: Responde 200 sin depender de la BD.
+    Si falla, Kubernetes reinicia el pod.
+    """
+    return {"status": "alive"}
+
+@app.get("/readyz", status_code=200)
+def readiness():
+    """
+    readinessProbe: Verifica la conexión a PostgreSQL.
+    200 si está lista, 503 si no.
+    """
+    try:
+        # Usamos el context manager que ya tienes en .db
+        # para intentar conectar a PostgreSQL.
+        with conexion() as conn:
+            # Si entra aquí, la conexión fue exitosa.
+            pass
+        return {"status": "ready"}
+    except Exception as e:
+        # Si falla, lanzamos un 503. Kubernetes saca el pod del balanceo sin reiniciarlo.
+        raise HTTPException(
+            status_code=503, 
+            detail=f"Database not ready: {str(e)}"
+        )
 
 @app.get("/api/bonos")
 def listar_bonos():
