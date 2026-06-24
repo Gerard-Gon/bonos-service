@@ -30,8 +30,8 @@ jobs:
         aws-region: us-east-1
     - uses: aws-actions/amazon-ecr-login@v1
     - run: |
-        docker build -t 914091100375.dkr.ecr.us-east-1.amazonaws.com/[NOMBRE_REPO]:latest .
-        docker push 914091100375.dkr.ecr.us-east-1.amazonaws.com/[NOMBRE_REPO]:latest
+        docker build -t 914091100375.dkr.ecr.us-east-1.amazonaws.com/bonos-service:latest .
+        docker push 914091100375.dkr.ecr.us-east-1.amazonaws.com/bonos-service:latest
 
   deploy:
     needs: push
