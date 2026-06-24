@@ -29,9 +29,16 @@ jobs:
         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
         aws-region: us-east-1
     - uses: aws-actions/amazon-ecr-login@v1
-    - run: |
-        docker build -t 914091100375.dkr.ecr.us-east-1.amazonaws.com/bonos-service:latest .
-        docker push 914091100375.dkr.ecr.us-east-1.amazonaws.com/bonos-service:latest
+    - name: Construir, Etiquetar y Subir
+      env:
+        ECR_REGISTRY: 914091100375.dkr.ecr.us-east-1.amazonaws.com
+        ECR_REPOSITORY: bonos-service # CAMBIA ESTO POR EL NOMBRE DEL REPO
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:v1.0.0
+        docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
 
   deploy:
     needs: push
@@ -45,4 +52,11 @@ jobs:
         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
         aws-region: us-east-1
     - run: aws eks update-kubeconfig --region us-east-1 --name vidal-casino-cluster
-    - run: kubectl apply -f k8s/
+    - name: Desplegar en EKS
+      env:
+        ECR_REGISTRY: 914091100375.dkr.ecr.us-east-1.amazonaws.com
+        ECR_REPOSITORY: bonos-service # CAMBIA ESTO TAMBIÉN
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        kubectl apply -f k8s/
+        kubectl set image deployment/bonos-deployment bonos=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
