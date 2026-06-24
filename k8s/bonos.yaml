@@ -14,12 +14,26 @@ spec:
     spec:
       containers:
       - name: bonos
-        image: 914091100375.dkr.ecr.us-east-1.amazonaws.com/bonos:latest
+        image: 914091100375.dkr.ecr.us-east-1.amazonaws.com/bonos-service:latest
         ports:
         - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "postgres-service"
         envFrom:
         - secretRef:
             name: casino-secrets
+        # CAMBIO: Agregamos las sondas de salud que definiste en tu código
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: 3000
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 3000
+          initialDelaySeconds: 10
 ---
 apiVersion: v1
 kind: Service
