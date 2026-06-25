@@ -38,15 +38,3 @@ spec:
             path: /readyz
             port: 8004
           initialDelaySeconds: 10
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: bonos-service
-spec:
-  type: ClusterIP
-  selector:
-    app: bonos
-  ports:
-  - port: 8004
-    targetPort: 8004
