@@ -15,6 +15,10 @@ spec:
       containers:
       - name: bonos
         image: 914091100375.dkr.ecr.us-east-1.amazonaws.com/bonos-service:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
         ports:
         - containerPort: 8004
         env:
